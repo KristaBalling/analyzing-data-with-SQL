@@ -1,0 +1,145 @@
+
+
+Q 1: Were there more male or female voters in Greensboro?
+
+A: voting=# select count(*) from votes where "cityId" = 68 and gender = 'male';
+ count
+-------
+   396
+(1 row)
+
+voting=# select count(*) from votes where "cityId" = 68 and gender = 'female';
+ count
+-------
+   404
+(1 row)
+
+******************************************************
+
+Q 2: What is the average age of voters in Orlando?
+
+A: voting=# select avg(age) from votes where "cityId" = 77;
+         avg
+---------------------
+ 51.4562500000000000
+(1 row)
+
+*********************************************************
+
+Q 3: Which state has the most cities listed?
+
+SELECT COUNT(ID), "stateId" from cities group by "stateId" order by count(id) desc;
+
+A: California Id = 3
+
+************************************************************
+
+Q 4: Which state had the most votes placed?
+
+select count(id), "cityId" from votes group by "cityId" order by count(id) desc;
+
+(It looks like they all had the same amount of votes?)
+
+count | cityId
+-------+--------
+   800 |    251
+   800 |    106
+   800 |    681
+   800 |    120
+   800 |    285
+   800 |    866
+   800 |    264
+   800 |    887
+
+   ****************************************************************
+
+Q 5: What percentage of cities passed the minimum wage issue (> 50% of votes)?
+
+select count(*) from (select count(*) from votes where "issueId" = 2 and in_favor = 't' group by "cityId" having count(*) >100) as pants;
+ count
+-------
+   461
+(1 row)
+
+voting=# select count(*) from (select count(*) from votes where "issueId" = 2 and in_favor = 'f' group by "cityId" having count(*)>100) as pants;
+ count
+-------
+   492
+(1 row)
+
+A: 44%
+
+Q 6: How many of the issues were approved in each of the following cities? An issue is 'approved' if it got more than 50% of the votes.
+
+Dallas
+Atlanta
+Anaheim
+Boston
+
+select id from cities where name = 'Dallas';
+ id
+----
+  8
+(1 row)
+
+
+voting-#   select count(*), issues.id from issues
+voting-#     join votes on votes."issueId" = issues.id
+voting-#     join cities on cities.id = votes."cityId"
+voting-#
+voting-#     where in_favor = 't' and cities.id = 8
+voting-#
+voting-#     group by issues.id;
+ count | id
+-------+----
+   100 |  1
+   101 |  2
+   102 |  3
+   105 |  4
+(4 rows)
+
+voting=# select id from cities where name = 'Atlanta';
+ id
+----
+ 40
+(1 row)
+
+voting=# select count(*), issues.id from issues join votes on votes."issueId" = issues.id join cities on cities.id = votes."cityId" where in_favor = 't' and cities.id=40 group by issues.id;
+ count | id
+-------+----
+   110 |  1
+   102 |  2
+   101 |  3
+   105 |  4
+(4 rows)
+
+
+voting=# select id from cities where name = 'Anaheim';
+ id
+----
+ 56
+(1 row)
+
+voting=# select count(*), issues.id from issues join votes on votes."issueId" = issues.id join cities on cities.id=votes."cityId" where in_favor = 't' and cities.id=56 group by issues.id;
+ count | id
+-------+----
+    93 |  1
+   101 |  2
+   108 |  3
+   105 |  4
+(4 rows)
+
+voting=# select id from cities where name = 'Boston';
+ id
+----
+ 24
+(1 row)
+
+voting=# select count(*), issues.id from issues join votes on votes."issueId" = issues.id join cities on cities.id=votes."cityId" where in_favor = 't' and cities.id=24 group by issues.id;
+ count | id
+-------+----
+   102 |  1
+    95 |  2
+   100 |  3
+    97 |  4
+(4 rows)
